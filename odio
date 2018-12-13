@@ -14,71 +14,61 @@ Ul="\033[4m"		    #UnderLine
 
 banner()
 {
-	echo -ne \
-"\
-   ${Bold}┌─────────────────────────────────────────────────────────────┐${Wh}\n\
-   │${Gr}${Bold}Odio${Wh}: ${Dim}${Br}Effortless Music Downloading from YouTube${Wh} ${Pr}1.0 (C) 2018${Wh} │\n\
-   │${Gr}${Bold}Author${Wh}   : ${Gr}Hardeep Singh${Wh}			                 │\n\
-   │${Gr}${Bold}Website${Wh}  : ${Yl}${Ul}https://rootsh3ll.com${Wh}     	                 │\n\
-   ${Dim}${Bold}└─────────────────────────────────────────────────────────────┘${Wh}\n\
-"
+    echo -ne \
+        "\
+        ${Bold}┌─────────────────────────────────────────────────────────────┐${Wh}\n\
+        │${Gr}${Bold}Odio${Wh}: ${Dim}${Br}Effortless Music Downloading from YouTube${Wh} ${Pr}1.0 (C) 2018${Wh} │\n\
+        ${Dim}${Bold}└─────────────────────────────────────────────────────────────┘${Wh}\n\
+        "
 }
 
 dependencies_check()
 {
-	if [[ ! $(which youtube-dl) ]]; then
-		echo "install ${Bold}youtube-dl${Wh}"
+    if [[ ! $(which youtube-dl) ]]; then
+        echo "install ${Bold}youtube-dl${Wh}"
         install_status = 1
     fi
 
-	if [[ ! $(which ffmpeg) ]]; then
-		echo "install ${Bold}ffmpeg${Wh}"
+    if [[ ! $(which ffmpeg) ]]; then
+        echo "install ${Bold}ffmpeg${Wh}"
         install_status = 1
-	fi
+    fi
 
-	if [[ $install_status -eq 1 ]];then
+    if [[ $install_status -eq 1 ]];then
         echo -e "${Rd}[!] ${Yl}Dependencies are not installed.${Wh}"
-		exit
-	fi
+        exit
+    fi
 }
 
-
-uname=$(uname);
-case "$uname" in
-    (*Linux*)   alias pbcopy='xsel --clipboard --input';
-                alias pbpaste='xsel --clipboard --output'; ;;
-    (*Darwin*) echo -n ;;
-    (*) echo 'error: unsupported platform.'; exit 2; ;;
-esac;
+alias pbpaste='xsel --clipboard --output'
 
 function youtube-audio-downloader()
 {
     substring="https://*.youtube.com/"
+    url=''
+    url2=''
     while $TRUE
     do
-        sleep 1
-        url=`pbpaste`
+        sleep 0.1
+        url=$(xsel --clipboard --output)
         if [ -z "$url" ]; then
-            echo -ne "\r${Bold}Waiting for new URL...  \b\b${Wh}"
+            #echo -ne "\r${Bold}Waiting for new URL...  \b\b${Wh}"
+            continue
         elif [ "${url/$substring}" = "$url" ]; then
-            echo -ne "\r${Rd}${Bold}Incorrect URL. Try Again${Wh}"
+            #echo -ne "\r${Rd}${Bold}Incorrect URL. Try Again${Wh}"
             continue
         else
-            echo -ne "\r${Gr}${Bold}Youtube Link Found! Downloading Audio...\n${Wh}"
-            youtube-dl -f 140 "$url --no-warnings"
-            echo -ne "\nAudio file saved in: [ ${Yl}${Ul}`pwd`${Wh} ]\n\n"
-            url2=`pbpaste`
-
-             if [ "$url" == "$url2" ]; then
-                 pbcopy < /dev/null
-                 continue
-            else
+            if [ "$url" == "$url2" ]; then
                 continue
+            else
+                echo -ne "\r${Gr}${Bold}Youtube Link Found! Downloading Audio...\n${Wh}"
+                youtube-dl -f 140 "$url" --ignore-errors --no-warnings &
+                echo -ne "\nAudio file saved in: [ ${Yl}${Ul}`pwd`${Wh} ]\n\n"
+                url2=$(xsel --clipboard --output)
             fi
         fi
     done
-
- }
+}
 
 banner
 dependencies_check
